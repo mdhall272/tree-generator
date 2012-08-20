@@ -26,7 +26,11 @@ public class TreeToNetwork {
                 String infectorID = getInfector(node, tree);
                 String[] line = new String[2];
                 line[0]=childID;
-                line[1]=infectorID;
+                if(infectorID==null){
+                    line[1]="Start";
+                } else {
+                    line[1]=infectorID;
+                }
                 csvOut.writeNext(line);
             }
             csvOut.close();
