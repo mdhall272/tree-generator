@@ -31,8 +31,8 @@ public class TreeToDataTable {
             for(Node node:tree.getExternalNodes()){
                 String[] line = new String[4];
                 line[0] = tree.getTaxon(node).getName();
-                line[1] = Double.toString(tree.getHeight(node) - reportToCull);
-                line[2] = Double.toString(tree.getHeight(node));
+                line[1] = Double.toString(tree.getHeight(node));
+                line[2] = Double.toString(tree.getHeight(node)+reportToCull);
                 double correctValue = infectiousPeriodLookup.get(line[0]);
                 double jitter = estimateJitter*MathUtils.nextGaussian();
                 line[3] = Double.toString(correctValue+jitter);

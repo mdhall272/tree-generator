@@ -95,7 +95,9 @@ public class ContinuousTreeSimulationTimeLimited extends ContinuousTreeSimulatio
         }
     }
 
-    public int[] runSimulation (boolean runDiscrete, boolean runSamplesOnly, boolean runDiscreteSamplesOnly, String basicfilename, String prunedfilename, String discretefilename, String discreteprunedfilename){
+    public int[] runSimulation (boolean runDiscrete, boolean runSamplesOnly, boolean runDiscreteSamplesOnly,
+                                String basicfilename, String prunedfilename, String discretefilename,
+                                String discreteprunedfilename){
 
         int[] nodeNumbers = new int[2];
 
