@@ -110,11 +110,11 @@ a bifurcation. Done like this since its length is actually informative.*/
 
         //Write to file
 
-        WriteToFile.write(tree, basicfilename);
+        WriteToNexusFile.write(tree, basicfilename);
 
         if (runDiscrete && !runSamplesOnly){
             ForwardRootedTree discreteTree = CreateDiscreteCopy.makeDiscreteCopy(tree);
-            WriteToFile.write(discreteTree, discretefilename);
+            WriteToNexusFile.write(discreteTree, discretefilename);
         }
 
         if (runSamplesOnly && !runDiscrete){
@@ -122,7 +122,7 @@ a bifurcation. Done like this since its length is actually informative.*/
             try {
                 ForwardRootedTree prunedTree = RUNs.transform(tree);
                 nodeNumbers[1]=prunedTree.getExternalNodes().size();
-                WriteToFile.write(prunedTree, prunedfilename);
+                WriteToNexusFile.write(prunedTree, prunedfilename);
             }
             catch (NoSamplesException e) {
                 nodeNumbers[1]=0;
@@ -131,16 +131,16 @@ a bifurcation. Done like this since its length is actually informative.*/
 
         if (runSamplesOnly && runDiscreteSamplesOnly) {
             ForwardRootedTree discreteTree = CreateDiscreteCopy.makeDiscreteCopy(tree);
-            WriteToFile.write(discreteTree, discretefilename);
+            WriteToNexusFile.write(discreteTree, discretefilename);
 
             RemoveUnsampled RUNs = new RemoveUnsampled();
             RemoveUnsampled RUNs2 = new RemoveUnsampled();
             try {
                 ForwardRootedTree prunedTree = RUNs.transform(tree);
                 nodeNumbers[1]=prunedTree.getExternalNodes().size();
-                WriteToFile.write(prunedTree, prunedfilename);
+                WriteToNexusFile.write(prunedTree, prunedfilename);
                 ForwardRootedTree prunedDiscreteTree = RUNs2.transform(discreteTree);
-                WriteToFile.write(prunedDiscreteTree, discreteprunedfilename);
+                WriteToNexusFile.write(prunedDiscreteTree, discreteprunedfilename);
             }
             catch (NoSamplesException e) {
                 nodeNumbers[1]=0;

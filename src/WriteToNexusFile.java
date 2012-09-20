@@ -13,7 +13,7 @@ import java.util.HashSet;
  * Time: 11:21
  * To change this template use File | Settings | File Templates.
  */
-public class WriteToFile {
+public class WriteToNexusFile {
 
     public static void write(ForwardRootedTree tree, String fileName){
         try {PrintWriter writer2 = new PrintWriter(new FileWriter(new File(fileName)));

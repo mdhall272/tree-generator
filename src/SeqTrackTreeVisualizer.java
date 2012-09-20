@@ -69,7 +69,7 @@ public class SeqTrackTreeVisualizer {
                     tree.setTaxon(node, names.get(i));
                 }
             }
-            WriteToFile.write(tree, "/Users/mhall/Documents/Netherlands H7N7/PB2 segment/PB2 SeqTrack.tre");
+            WriteToNexusFile.write(tree, "/Users/mhall/Documents/Netherlands H7N7/PB2 segment/PB2 SeqTrack.tre");
 
         }
         catch (FileNotFoundException e) {

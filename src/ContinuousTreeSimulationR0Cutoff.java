@@ -1,4 +1,10 @@
 import jebl.evolution.graphs.Graph;
+import jebl.evolution.graphs.Node;
+import jebl.evolution.trees.SimpleRootedTree;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +28,8 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         this.cutoff=cutoff;
     }
 
-    public void simulateInfection(ForwardRootedNode transmissionNode, double currentR0) {
+    public void simulateInfection(ForwardRootedNode transmissionNode, double currentR0, String unsampledPrefix,
+                                  String sampledPrefix) {
         Branch branch = new Branch(incubation_k, incubation_theta, infectious_k, infectious_theta, currentR0);
         double[] branchWaits = branch.getBranchWaits();
         ForwardRootedNode currentNode = transmissionNode;
@@ -33,12 +40,12 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         if(tree.getHeight(transmissionNode)+timeTillDeath>=samplingStartTime) {
             sampled = (drawIfSampled());
         }
-        String ID = "";
+        String ID;
         if(sampled){
-            ID="S" + sampledCorpseCounter;
+            ID=sampledPrefix + sampledCorpseCounter;
             sampledCorpseCounter++;
         } else {
-            ID="N" + unsampledCorpseCounter;
+            ID=unsampledPrefix + unsampledCorpseCounter;
             unsampledCorpseCounter++;
         }
 
@@ -59,7 +66,8 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
                 currentChild.setAttribute("Infector", ID);
                 currentChild.setAttribute("Node number", nodeCount);
                 nodeCount++;
-                simulateInfection(currentChild, currentChild.getHeight()<cutoff ? R0 : 0);
+                simulateInfection(currentChild, currentChild.getHeight()<cutoff ? R0 : 0, unsampledPrefix,
+                        sampledPrefix);
                 currentNode=currentChild;
                 i++;
             }
@@ -84,10 +92,10 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         }
     }
 
-    public boolean runSimulation (boolean runSamplesOnly, String basicFileName, String prunedFileName,
-                               String networkOutputFileName, String dataTableOutputFile,
-                               double reportToCull, double estimateJitter,int minTipsForOutput,
-                               int maxTipsForOutput){
+    public boolean runSimulation (boolean runSamplesOnly, boolean produceOMDinput, String basicFileName,
+                                  String prunedFileName, String omdInputFileName, String networkOutputFileName,
+                                  String dataTableOutputFile, double reportToCull, double estimateJitter,
+                                  int minTipsForOutput, int maxTipsForOutput, String farmIDPrefix, DateTime startDate){
 
         int[] nodeNumbers = new int[2];
 
@@ -97,13 +105,23 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         //Simulate all the infection
         rootNode.setAttribute("Node number", nodeCount);
         nodeCount++;
-        simulateInfection(rootNode, R0);
+        simulateInfection(rootNode, R0, farmIDPrefix+"U", farmIDPrefix+"S");
         nodeNumbers[0]=tree.getExternalNodes().size();
         System.out.println("Nodes in original tree: " + nodeNumbers[0]);
         if(tree.getExternalNodes().size()>=minTipsForOutput && tree.getExternalNodes().size()<=maxTipsForOutput){
             System.out.println("Writing to file: "+basicFileName);
 
-            WriteToFile.write(tree, basicFileName);
+            WriteToNexusFile.write(tree, basicFileName);
+
+            if(produceOMDinput){
+                ForwardRootedTree newTree = new ForwardRootedTree(tree);
+                ForwardRootedNode root = (ForwardRootedNode)newTree.getRootNode();
+                ForwardRootedNode rootChild = root.getChildren().get(0);
+                rootChild.setParent(null);
+                newTree.removeNode(root);
+                WriteToNewickFile.write(newTree, omdInputFileName);
+
+            }
 
             ForwardRootedTree prunedTree = tree;
 
@@ -116,7 +134,7 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
                     prunedTree = RUNs.transform(prunedTree);
                     nodeNumbers[1]=prunedTree.getExternalNodes().size();
                     System.out.println("Nodes in samples-only tree: " + nodeNumbers[1]);
-                    WriteToFile.write(prunedTree, prunedFileName);
+                    WriteToNexusFile.write(prunedTree, prunedFileName);
                 }
                 catch (NoSamplesException e) {
                     nodeNumbers[1]=0;
@@ -127,7 +145,7 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
             TreeToNetwork.outputCSVNetwork(networkOutputFileName, prunedTree);
             if(recordInfectiousPeriods){
                 TreeToDataTable.outputCSVDataTable(dataTableOutputFile, prunedTree, reportToCull, estimateJitter,
-                        hostInfectiousPeriods);
+                        startDate, hostInfectiousPeriods);
             }
             return true;
         } else {
@@ -137,22 +155,25 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
 
     }
 
-    public static void runSimulations(double samplingProbability, double samplingStartTime,
-                                      double cutoff, double R0, double incubation_k,
-                                      double incubation_theta, double infectious_k,
-                                      double infectious_theta, boolean recordIncubationPeriods,
-                                      boolean runSamplesOnly, String basicFileNameRoot, String prunedFileNameRoot,
+    public static void runSimulations(double samplingProbability, double samplingStartTime, double cutoff, double R0,
+                                      double incubation_k, double incubation_theta, double infectious_k,
+                                      double infectious_theta, boolean recordIncubationPeriods, boolean runSamplesOnly,
+                                      boolean produceOMDinput, String basicFileNameRoot, String prunedFileNameRoot,
                                       String networkOutputFileNameRoot, String dataTableOutputFileRoot,
                                       double reportToCull, double estimateJitter, int minTips, int maxTips,
-                                      int desiredRuns){
+                                      String startDateString, int desiredRuns){
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("dd/MM/yyyy");
+        DateTime startDate = formatter.parseDateTime(startDateString);
+
         int run = 1;
         while(run<=desiredRuns){
             ContinuousTreeSimulationR0Cutoff thisSim = new ContinuousTreeSimulationR0Cutoff(samplingProbability,
                     samplingStartTime, cutoff, R0, incubation_k, incubation_theta, infectious_k, infectious_theta,
                     recordIncubationPeriods);
-            boolean keep = thisSim.runSimulation(runSamplesOnly, basicFileNameRoot+"_"+run+".nex",
-                    prunedFileNameRoot+"_"+run+".nex",networkOutputFileNameRoot+"_"+run+".csv",
-                    dataTableOutputFileRoot+"_"+run+".csv", reportToCull, estimateJitter, minTips, maxTips);
+            boolean keep = thisSim.runSimulation(runSamplesOnly, produceOMDinput, basicFileNameRoot+"_"+run+".nex",
+                    prunedFileNameRoot+"_"+run+".nex", basicFileNameRoot+"_"+run+".newick",
+                    networkOutputFileNameRoot+"_"+run+".csv", dataTableOutputFileRoot+"_"+run+".csv", reportToCull,
+                    estimateJitter, minTips, maxTips, "Run_"+run+"_Farm_", startDate);
             if(keep){
                 run++;
             }
@@ -161,7 +182,7 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
     }
 
     public static void main (String [] args){
-        runSimulations(1, 0, 30, 1.5, 1.67, 3, 2, 2, true, false, "allfarms",
-                "contlineages", "network", "datatable", 2, 0, 40, 60, 10);
+        runSimulations(1, 0, 30, 1.5, 1.67, 3, 2, 2, true, false, true, "allfarms",
+                "contlineages", "network", "datatable", 0, 1, 40, 60, "01/01/2012", 10);
     }
 }

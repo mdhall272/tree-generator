@@ -88,7 +88,7 @@ public class RunMultipleSimulatedTrees {
     public static void main (String [] args) {
         RunMultipleSimulatedTrees simulationRunner = new RunMultipleSimulatedTrees(0.5, 0, 117, 1.1, 1, 1, 1, 1, 100);
 //        simulationRunner.doMultipleRuns();
-       WriteToFile.writeMultiple(simulationRunner.doMultipleRuns(),"TestTreeSet.nex");
+       WriteToNexusFile.writeMultiple(simulationRunner.doMultipleRuns(), "TestTreeSet.nex");
     }
 
 }

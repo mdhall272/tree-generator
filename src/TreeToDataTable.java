@@ -1,7 +1,9 @@
 import au.com.bytecode.opencsv.CSVWriter;
 import dr.math.MathUtils;
-import dr.math.distributions.NormalDistribution;
 import jebl.evolution.graphs.Node;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,25 +19,36 @@ import java.util.HashMap;
 public class TreeToDataTable {
 
     public static void outputCSVDataTable(String fileName, ForwardRootedTree tree, double reportToCull,
-                                          double estimateJitter,
+                                          double estimateJitter, DateTime simulationStart,
                                           HashMap<String,Double> infectiousPeriodLookup){
         try{
             CSVWriter csvOut = new CSVWriter(new FileWriter(fileName));
-            String[] header = new String[4];
-            header[0] = "Host";
-            header[1] = "Time of examination";
-            header[2] = "Time of cull";
-            header[3] = "Estimated oldest lesion age";
+            DateTimeFormatter formatter = DateTimeFormat.forPattern("dd/MM/yyyy");
+            String[] header = new String[5];
+            header[0] = "Farm_ID";
+            header[1] = "Taxon";
+            header[2] = "Exam_date";
+            header[3] = "Cull_date";
+            header[4] = "Oldest_lesion";
             csvOut.writeNext(header);
 
             for(Node node:tree.getExternalNodes()){
-                String[] line = new String[4];
+                String[] line = new String[5];
                 line[0] = tree.getTaxon(node).getName();
-                line[1] = Double.toString(tree.getHeight(node));
-                line[2] = Double.toString(tree.getHeight(node)+reportToCull);
+                line[1] = tree.getTaxon(node).getName();
+                double test = tree.getHeight(node);
+                DateTime reportDate = new DateTime(simulationStart.plusDays((int)Math.floor(tree.getHeight(node))));
+                line[2] = formatter.print(reportDate);
+                DateTime cullDate = new DateTime(simulationStart.plusDays((int)Math.floor(tree.getHeight(node)+
+                        reportToCull)));
+                line[3] = formatter.print(cullDate);
                 double correctValue = infectiousPeriodLookup.get(line[0]);
-                double jitter = estimateJitter*MathUtils.nextGaussian();
-                line[3] = Double.toString(correctValue+jitter);
+                double estimatedLesionDate = -1;
+                while(estimatedLesionDate<0){
+                    double jitter = estimateJitter*MathUtils.nextGaussian();
+                    estimatedLesionDate = correctValue+jitter;
+                }
+                line[4] = Double.toString(Math.round(estimatedLesionDate));
                 csvOut.writeNext(line);
             }
             csvOut.close();

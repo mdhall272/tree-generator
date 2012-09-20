@@ -12,6 +12,9 @@ import java.util.List;
  * Time: 14:13
  * To change this template use File | Settings | File Templates.
  */
+
+/* Need to rewrite this if you want to output a data table!!!*/
+
 public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulation {
 
     private int finalNumberOfSamples;
@@ -192,7 +195,7 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
         simulateInfection(rootNode);
         nodeNumbers[0]=tree.getExternalNodes().size();
         System.out.println("Nodes in original tree: " + nodeNumbers[0]);
-        WriteToFile.write(tree, originalFileName);
+        WriteToNexusFile.write(tree, originalFileName);
         ForwardRootedTree trimmedTree = pruneToLimit(tree);
         nodeNumbers[1]=trimmedTree.getExternalNodes().size();
         System.out.println("Nodes in trimmed tree: " + nodeNumbers[1]);
@@ -200,7 +203,7 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
 
         //Write to file
 
-        WriteToFile.write(trimmedTree, basicFileName);
+        WriteToNexusFile.write(trimmedTree, basicFileName);
 
         ForwardRootedTree prunedTree = trimmedTree;
 
@@ -213,7 +216,7 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
                 prunedTree = RUNs.transform(prunedTree);
                 nodeNumbers[2]=prunedTree.getExternalNodes().size();
                 System.out.println("Nodes in samples-only tree: " + nodeNumbers[2]);
-                WriteToFile.write(prunedTree, prunedFileName);
+                WriteToNexusFile.write(prunedTree, prunedFileName);
             }
             catch (NoSamplesException e) {
                 nodeNumbers[2]=0;
@@ -223,7 +226,7 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
 
         TreeToNetwork.outputCSVNetwork(networkOutputFileName, prunedTree);
         if(recordInfectiousPeriods){
-            TreeToDataTable.outputCSVDataTable(dataTableOutputFile, prunedTree, reportToCull, estimateJitter,
+            TreeToDataTable.outputCSVDataTable(dataTableOutputFile, prunedTree, reportToCull, estimateJitter, null,
                     hostInfectiousPeriods);
         }
 
