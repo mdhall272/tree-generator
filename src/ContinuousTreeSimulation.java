@@ -9,8 +9,8 @@ import java.util.HashMap;
  */
 public abstract class ContinuousTreeSimulation extends TreeSimulation {
 
-    protected double incubation_k;
-    protected double incubation_theta;
+    protected double incubation_mean;
+    protected double incubation_stdev;
     protected double infectious_k;
     protected double infectious_theta;
     protected HashMap<String, Double> hostInfectiousPeriods;
@@ -20,12 +20,12 @@ public abstract class ContinuousTreeSimulation extends TreeSimulation {
     /*Constructor*/
 
     public ContinuousTreeSimulation(double samplingProbability, double samplingStartTime, double R0,
-                                    double incubation_k, double incubation_theta, double infectious_k,
+                                    double incubation_mean, double incubation_stdev, double infectious_k,
                                     double infectious_theta, boolean recordInfectiousPeriods){
         super(samplingProbability, samplingStartTime, R0);
-        this.incubation_k=incubation_k;
+        this.incubation_mean=incubation_mean;
         this.infectious_k=infectious_k;
-        this.incubation_theta=incubation_theta;
+        this.incubation_stdev=incubation_stdev;
         this.infectious_theta=infectious_theta;
         hostInfectiousPeriods = new HashMap<String, Double>();
         this.recordInfectiousPeriods = recordInfectiousPeriods;

@@ -32,7 +32,7 @@ public class ContinuousTreeSimulationTimeLimited extends ContinuousTreeSimulatio
         }
 
     public void simulateInfection(ForwardRootedNode transmissionNode) {
-        Branch branch = new Branch(incubation_k, incubation_theta, infectious_k, infectious_theta, R0);
+        Branch branch = new LognormalGammaBranch(incubation_mean, incubation_stdev, infectious_k, infectious_theta, R0);
         double[] branchWaits = branch.getBranchWaits();
         ForwardRootedNode currentNode = transmissionNode;
         boolean sampled = false;

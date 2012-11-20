@@ -1,9 +1,13 @@
 import jebl.evolution.graphs.Graph;
 import jebl.evolution.graphs.Node;
 import jebl.evolution.trees.SimpleRootedTree;
+import jebl.math.Random;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 /**
@@ -30,7 +34,8 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
 
     public void simulateInfection(ForwardRootedNode transmissionNode, double currentR0, String unsampledPrefix,
                                   String sampledPrefix) {
-        Branch branch = new Branch(incubation_k, incubation_theta, infectious_k, infectious_theta, currentR0);
+        Branch branch = new TruncNormalGammaBranch(incubation_mean, incubation_stdev, infectious_k, infectious_theta,
+                currentR0);
         double[] branchWaits = branch.getBranchWaits();
         ForwardRootedNode currentNode = transmissionNode;
         boolean sampled = false;
@@ -120,7 +125,6 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
                 rootChild.setParent(null);
                 newTree.removeNode(root);
                 WriteToNewickFile.write(newTree, omdInputFileName);
-
             }
 
             ForwardRootedTree prunedTree = tree;
@@ -156,24 +160,25 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
     }
 
     public static void runSimulations(double samplingProbability, double samplingStartTime, double cutoff, double R0,
-                                      double incubation_k, double incubation_theta, double infectious_k,
+                                      double incubation_mean, double incubation_stdev, double infectious_k,
                                       double infectious_theta, boolean recordIncubationPeriods, boolean runSamplesOnly,
                                       boolean produceOMDinput, String basicFileNameRoot, String prunedFileNameRoot,
                                       String networkOutputFileNameRoot, String dataTableOutputFileRoot,
                                       double reportToCull, double estimateJitter, int minTips, int maxTips,
-                                      String startDateString, int desiredRuns){
+                                      String startDateString, int desiredRuns, int firstRunNo){
         DateTimeFormatter formatter = DateTimeFormat.forPattern("dd/MM/yyyy");
         DateTime startDate = formatter.parseDateTime(startDateString);
 
         int run = 1;
         while(run<=desiredRuns){
+            String extension = "_"+(firstRunNo-1+run);
             ContinuousTreeSimulationR0Cutoff thisSim = new ContinuousTreeSimulationR0Cutoff(samplingProbability,
-                    samplingStartTime, cutoff, R0, incubation_k, incubation_theta, infectious_k, infectious_theta,
+                    samplingStartTime, cutoff, R0, incubation_mean, incubation_stdev, infectious_k, infectious_theta,
                     recordIncubationPeriods);
-            boolean keep = thisSim.runSimulation(runSamplesOnly, produceOMDinput, basicFileNameRoot+"_"+run+".nex",
-                    prunedFileNameRoot+"_"+run+".nex", basicFileNameRoot+"_"+run+".newick",
-                    networkOutputFileNameRoot+"_"+run+".csv", dataTableOutputFileRoot+"_"+run+".csv", reportToCull,
-                    estimateJitter, minTips, maxTips, "Run_"+run+"_Farm_", startDate);
+            boolean keep = thisSim.runSimulation(runSamplesOnly, produceOMDinput, basicFileNameRoot+extension+".nex",
+                    prunedFileNameRoot+extension+".nex", basicFileNameRoot+extension+".newick",
+                    networkOutputFileNameRoot+extension+".csv", dataTableOutputFileRoot+extension+".csv", reportToCull,
+                    estimateJitter, minTips, maxTips, "Run"+extension+"_Farm_", startDate);
             if(keep){
                 run++;
             }
@@ -182,7 +187,24 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
     }
 
     public static void main (String [] args){
-        runSimulations(1, 0, 30, 1.5, 1.67, 3, 2, 2, true, false, true, "allfarms",
-                "contlineages", "network", "datatable", 0, 1, 40, 60, "01/01/2012", 10);
+        try {
+            int noDifferentRuns = 10;
+            int noSimilarRuns = 1;
+            FileWriter writer = new FileWriter("incubation_period_parameters.txt");
+            int totalCount = 1;
+            for (int i=1; i<=noDifferentRuns; i++){
+                double random_mean = Random.nextDouble()*9 + 1;
+                double random_stdev = Random.nextDouble()*5;
+                writer.write  ("Simulation " + i + ": Mean " + random_mean + ", SD " +
+                        random_stdev + "\n");
+                writer.flush();
+                runSimulations(1, 0, 30, 1.5, random_mean, random_stdev, 2, 2, true, false, true, "allfarms",
+                        "contlineages", "network", "datatable", 0, 1, 40, 60, "01/01/2012", noSimilarRuns,
+                        totalCount);
+                totalCount = totalCount + noSimilarRuns;
+            }
+        }catch(IOException e){
+            System.out.println("IOException");
+        }
     }
 }
