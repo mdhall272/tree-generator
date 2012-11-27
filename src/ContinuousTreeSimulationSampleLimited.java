@@ -35,7 +35,7 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
         currentDeepestTipHeight=0;
         nodeCount=0;
         heightLookup=new ArrayList<NodeAndHeight>();
-        this.recordInfectiousPeriods = recordIncubationPeriods;
+        this.recordIncubationPeriods = recordIncubationPeriods;
     }
 
     public void simulateInfection(ForwardRootedNode transmissionNode) {
@@ -58,8 +58,8 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
             unsampledCorpseCounter++;
         }
 
-        if(recordInfectiousPeriods){
-            hostInfectiousPeriods.put(ID,branch.getInfectiousPeriod());
+        if(recordIncubationPeriods){
+            hostIncubationPeriods.put(ID,branch.getInfectiousPeriod());
         }
 
         boolean outOfTime = false;
@@ -225,9 +225,9 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
         }
 
         TreeToNetwork.outputCSVNetwork(networkOutputFileName, prunedTree);
-        if(recordInfectiousPeriods){
+        if(recordIncubationPeriods){
             TreeToDataTable.outputCSVDataTable(dataTableOutputFile, prunedTree, reportToCull, estimateJitter, null,
-                    hostInfectiousPeriods);
+                    hostIncubationPeriods);
         }
 
         return nodeNumbers;

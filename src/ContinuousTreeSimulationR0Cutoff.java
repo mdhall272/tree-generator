@@ -1,6 +1,5 @@
 import jebl.evolution.graphs.Graph;
 import jebl.evolution.graphs.Node;
-import jebl.evolution.trees.SimpleRootedTree;
 import jebl.math.Random;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -34,7 +33,7 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
 
     public void simulateInfection(ForwardRootedNode transmissionNode, double currentR0, String unsampledPrefix,
                                   String sampledPrefix) {
-        Branch branch = new TruncNormalGammaBranch(incubation_mean, incubation_stdev, infectious_k, infectious_theta,
+        Branch branch = new LognormalGammaBranch(incubation_mean, incubation_stdev, infectious_k, infectious_theta,
                 currentR0);
         double[] branchWaits = branch.getBranchWaits();
         ForwardRootedNode currentNode = transmissionNode;
@@ -54,8 +53,8 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
             unsampledCorpseCounter++;
         }
 
-        if(recordInfectiousPeriods){
-            hostInfectiousPeriods.put(ID,branch.getInfectiousPeriod());
+        if(recordIncubationPeriods){
+            hostIncubationPeriods.put(ID, branch.getIncubationPeriod());
         }
 
         int i=0;
@@ -97,6 +96,19 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         }
     }
 
+    private void adjustExternalNodeHeights(){
+        for(Node node: tree.getExternalNodes()){
+            adjustExternalNodeHeight((ForwardRootedNode)node);
+        }
+    }
+
+    private static void adjustExternalNodeHeight(ForwardRootedNode node){
+        double oldHeight = node.getHeight();
+        double newHeight = Math.ceil(oldHeight);
+        double parentHeight = node.getParent().getHeight();
+        node.setLength(newHeight - parentHeight);
+    }
+
     public boolean runSimulation (boolean runSamplesOnly, boolean produceOMDinput, String basicFileName,
                                   String prunedFileName, String omdInputFileName, String networkOutputFileName,
                                   String dataTableOutputFile, double reportToCull, double estimateJitter,
@@ -111,6 +123,7 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
         rootNode.setAttribute("Node number", nodeCount);
         nodeCount++;
         simulateInfection(rootNode, R0, farmIDPrefix+"U", farmIDPrefix+"S");
+        adjustExternalNodeHeights();
         nodeNumbers[0]=tree.getExternalNodes().size();
         System.out.println("Nodes in original tree: " + nodeNumbers[0]);
         if(tree.getExternalNodes().size()>=minTipsForOutput && tree.getExternalNodes().size()<=maxTipsForOutput){
@@ -147,9 +160,9 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
             }
 
             TreeToNetwork.outputCSVNetwork(networkOutputFileName, prunedTree);
-            if(recordInfectiousPeriods){
+            if(recordIncubationPeriods){
                 TreeToDataTable.outputCSVDataTable(dataTableOutputFile, prunedTree, reportToCull, estimateJitter,
-                        startDate, hostInfectiousPeriods);
+                        startDate, hostIncubationPeriods);
             }
             return true;
         } else {
@@ -177,8 +190,8 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
                     recordIncubationPeriods);
             boolean keep = thisSim.runSimulation(runSamplesOnly, produceOMDinput, basicFileNameRoot+extension+".nex",
                     prunedFileNameRoot+extension+".nex", basicFileNameRoot+extension+".newick",
-                    networkOutputFileNameRoot+extension+".csv", dataTableOutputFileRoot+extension+".csv", reportToCull,
-                    estimateJitter, minTips, maxTips, "Run"+extension+"_Farm_", startDate);
+                    networkOutputFileNameRoot+extension+".csv", dataTableOutputFileRoot+extension+".csv",
+                    reportToCull, estimateJitter, minTips, maxTips, "Run"+extension+"_Farm_", startDate);
             if(keep){
                 run++;
             }
@@ -195,9 +208,23 @@ public class ContinuousTreeSimulationR0Cutoff extends ContinuousTreeSimulation {
             for (int i=1; i<=noDifferentRuns; i++){
                 double random_mean = Random.nextDouble()*9 + 1;
                 double random_stdev = Random.nextDouble()*5;
+
+                double under_var = Math.log((Math.pow(random_stdev/random_mean,2))+1);
+                double under_sd = Math.sqrt(under_var);
+                double under_mean = Math.log(random_mean) - under_var/2;
+
+/*                writer.write  ("Simulation " + i + ": Mean " + random_mean + ", SD " +
+                        random_stdev +"\n");
+                writer.flush();*/
+
                 writer.write  ("Simulation " + i + ": Mean " + random_mean + ", SD " +
-                        random_stdev + "\n");
+                        random_stdev + " (Underlying normal distribution with mean "+under_mean+" and SD " +
+                        under_sd+")\n");
                 writer.flush();
+
+                random_mean = under_mean;
+                random_stdev = under_sd;
+
                 runSimulations(1, 0, 30, 1.5, random_mean, random_stdev, 2, 2, true, false, true, "allfarms",
                         "contlineages", "network", "datatable", 0, 1, 40, 60, "01/01/2012", noSimilarRuns,
                         totalCount);

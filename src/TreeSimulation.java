@@ -56,6 +56,7 @@ public abstract class TreeSimulation {
 
     public ForwardRootedNode placeRoot(boolean SDesc) {
         ForwardRootedNode node=tree.createRoot();
+        node.setAttribute("Infector", "start");
         changeSampledDescendant(node,SDesc);
         return node;
     }

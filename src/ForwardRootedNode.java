@@ -86,7 +86,7 @@ public class ForwardRootedNode extends BaseNode {
         this.height = height;
     }
 
-    /*Get the length of this node (the distance from it to its parent node*/
+    /*Get the length of this node (the distance from it to its parent node)*/
 
     public double getLength() {
         return length;

@@ -13,8 +13,8 @@ public abstract class ContinuousTreeSimulation extends TreeSimulation {
     protected double incubation_stdev;
     protected double infectious_k;
     protected double infectious_theta;
-    protected HashMap<String, Double> hostInfectiousPeriods;
-    protected boolean recordInfectiousPeriods;
+    protected HashMap<String, Double> hostIncubationPeriods;
+    protected boolean recordIncubationPeriods;
     protected int nodeCount;
 
     /*Constructor*/
@@ -27,8 +27,8 @@ public abstract class ContinuousTreeSimulation extends TreeSimulation {
         this.infectious_k=infectious_k;
         this.incubation_stdev=incubation_stdev;
         this.infectious_theta=infectious_theta;
-        hostInfectiousPeriods = new HashMap<String, Double>();
-        this.recordInfectiousPeriods = recordInfectiousPeriods;
+        hostIncubationPeriods = new HashMap<String, Double>();
+        this.recordIncubationPeriods = recordInfectiousPeriods;
     }
 
     /*Sum over an array */
