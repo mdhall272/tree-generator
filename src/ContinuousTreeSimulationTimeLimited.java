@@ -10,17 +10,20 @@ import jebl.evolution.graphs.Graph;
 public class ContinuousTreeSimulationTimeLimited extends ContinuousTreeSimulation {
 
     protected double samplingEndTime;
+    protected double infectious_k;
+    protected double infectious_theta;
 
     public ContinuousTreeSimulationTimeLimited(double samplingProbability, double samplingStartTime,
                                                     double samplingEndTime, double R0, double incubation_k,
                                                     double incubation_theta, double infectious_k,
                                                     double infectious_theta, boolean recordInfectiousPeriod){
-        super(samplingProbability, samplingStartTime, R0, incubation_k, infectious_k, incubation_theta,
-                infectious_theta, recordInfectiousPeriod);
+        super(samplingProbability, samplingStartTime, R0, incubation_theta, infectious_theta, recordInfectiousPeriod);
         if(samplingEndTime<=samplingStartTime){
             throw new IllegalArgumentException("Sampling cannot end before it begins");
         }
         this.samplingEndTime=samplingEndTime;
+        this.infectious_k = infectious_k;
+        this.infectious_theta = infectious_theta;
     }
 
     public ContinuousTreeSimulationTimeLimited(double samplingProbability, double samplingStartTime,

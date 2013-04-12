@@ -1,0 +1,62 @@
+#NEXUS
+begin taxa;
+	dimensions ntax=52;
+	taxlabels
+	S10
+	S11
+	S40
+	S14
+	S15
+	S12
+	S13
+	S2
+	S18
+	S1
+	S19
+	S16
+	S17
+	S49
+	S48
+	S47
+	S46
+	S45
+	S44
+	S43
+	S42
+	S41
+	S50
+	S51
+	S52
+	S36
+	S37
+	S34
+	S35
+	S32
+	S33
+	S30
+	S31
+	S38
+	S39
+	S23
+	S24
+	S25
+	S26
+	S20
+	S21
+	S22
+	S27
+	S28
+	S29
+	S3
+	S4
+	S5
+	S6
+	S7
+	S8
+	S9
+;
+end;
+
+begin trees;
+	tree tree_1 = [&R] (((S3[&"Number of transmissions"=0,"Node number"=3,Sampled=true]:3.257867,(S4[&"Number of transmissions"=0,"Node number"=5,Sampled=true]:2.914522,((((S8[&"Number of transmissions"=0,"Node number"=10,Sampled=true]:10.332114,S7[&"Number of transmissions"=0,"Node number"=11,Sampled=true]:2.374491)[&"Number of transmissions"=0,"Node number"=9,Infector="S7","Sampled Descendant"=true]:2.933881,(S9[&"Number of transmissions"=0,"Node number"=13,Sampled=true]:10.425594,S6[&"Number of transmissions"=0,"Node number"=14,Sampled=true]:0.081192)[&"Number of transmissions"=0,"Node number"=12,Infector="S6","Sampled Descendant"=true]:1.197029)[&"Number of transmissions"=0,"Node number"=8,Infector="S6","Sampled Descendant"=true]:2.301045,((S11[&"Number of transmissions"=0,"Node number"=17,Sampled=true]:3.869314,S10[&"Number of transmissions"=0,"Node number"=18,Sampled=true]:2.122877)[&"Number of transmissions"=0,"Node number"=16,Infector="S10","Sampled Descendant"=true]:6.919753,S5[&"Number of transmissions"=0,"Node number"=19,Sampled=true]:1.550114)[&"Number of transmissions"=0,"Node number"=15,Infector="S5","Sampled Descendant"=true]:0.055473)[&"Number of transmissions"=0,"Node number"=7,Infector="S5","Sampled Descendant"=true]:4.177486,((S13[&"Number of transmissions"=0,"Node number"=22,Sampled=true]:12.032735,S12[&"Number of transmissions"=0,"Node number"=23,Sampled=true]:2.661239)[&"Number of transmissions"=0,"Node number"=21,Infector="S12","Sampled Descendant"=true]:3.640709,((S15[&"Number of transmissions"=0,"Node number"=26,Sampled=true]:8.1183,(S16[&"Number of transmissions"=0,"Node number"=28,Sampled=true]:13.046224,S14[&"Number of transmissions"=0,"Node number"=29,Sampled=true]:3.48748)[&"Number of transmissions"=0,"Node number"=27,Infector="S14","Sampled Descendant"=true]:4.010705)[&"Number of transmissions"=0,"Node number"=25,Infector="S14","Sampled Descendant"=true]:6.741114,(S17[&"Number of transmissions"=0,"Node number"=31,Sampled=true]:9.696072,(S18[&"Number of transmissions"=0,"Node number"=33,Sampled=true]:12.534155,S2[&"Number of transmissions"=0,"Node number"=34,Sampled=true]:0.39549)[&"Number of transmissions"=0,"Node number"=32,Infector="S2","Sampled Descendant"=true]:0.879659)[&"Number of transmissions"=0,"Node number"=30,Infector="S2","Sampled Descendant"=true]:0.636942)[&"Number of transmissions"=0,"Node number"=24,Infector="S2","Sampled Descendant"=true]:2.175793)[&"Number of transmissions"=0,"Node number"=20,Infector="S2","Sampled Descendant"=true]:1.803969)[&"Number of transmissions"=0,"Node number"=6,Infector="S2","Sampled Descendant"=true]:0.241894)[&"Number of transmissions"=0,"Node number"=4,Infector="S2","Sampled Descendant"=true]:5.884095)[&"Number of transmissions"=0,"Node number"=2,Infector="S2","Sampled Descendant"=true]:3.681266,(S19[&"Number of transmissions"=0,"Node number"=36,Sampled=true]:6.9848,(((S22[&"Number of transmissions"=0,"Node number"=40,Sampled=true]:6.193389,((((S26[&"Number of transmissions"=0,"Node number"=45,Sampled=true]:4.614614,(S27[&"Number of transmissions"=0,"Node number"=47,Sampled=true]:5.693149,(S28[&"Number of transmissions"=0,"Node number"=49,Sampled=true]:6.755302,(S29[&"Number of transmissions"=0,"Node number"=51,Sampled=true]:11.080889,S25[&"Number of transmissions"=0,"Node number"=52,Sampled=true]:2.448302)[&"Number of transmissions"=0,"Node number"=50,Infector="S25","Sampled Descendant"=true]:1.369866)[&"Number of transmissions"=0,"Node number"=48,Infector="S25","Sampled Descendant"=true]:1.057732)[&"Number of transmissions"=0,"Node number"=46,Infector="S25","Sampled Descendant"=true]:1.323752)[&"Number of transmissions"=0,"Node number"=44,Infector="S25","Sampled Descendant"=true]:13.643304,((S31[&"Number of transmissions"=0,"Node number"=55,Sampled=true]:10.45965,(S32[&"Number of transmissions"=0,"Node number"=57,Sampled=true]:21.269741,S30[&"Number of transmissions"=0,"Node number"=58,Sampled=true]:0.82348)[&"Number of transmissions"=0,"Node number"=56,Infector="S30","Sampled Descendant"=true]:0.874121)[&"Number of transmissions"=0,"Node number"=54,Infector="S30","Sampled Descendant"=true]:2.3691,S24[&"Number of transmissions"=0,"Node number"=59,Sampled=true]:3.617422)[&"Number of transmissions"=0,"Node number"=53,Infector="S24","Sampled Descendant"=true]:1.97405)[&"Number of transmissions"=0,"Node number"=43,Infector="S24","Sampled Descendant"=true]:6.78012,(((S35[&"Number of transmissions"=0,"Node number"=63,Sampled=true]:6.479977,(S36[&"Number of transmissions"=0,"Node number"=65,Sampled=true]:10.517087,S34[&"Number of transmissions"=0,"Node number"=66,Sampled=true]:0.189321)[&"Number of transmissions"=0,"Node number"=64,Infector="S34","Sampled Descendant"=true]:1.140583)[&"Number of transmissions"=0,"Node number"=62,Infector="S34","Sampled Descendant"=true]:8.686484,(((S39[&"Number of transmissions"=0,"Node number"=70,Sampled=true]:4.647653,(S40[&"Number of transmissions"=0,"Node number"=72,Sampled=true]:6.740234,(S41[&"Number of transmissions"=0,"Node number"=74,Sampled=true]:13.483578,(S42[&"Number of transmissions"=0,"Node number"=76,Sampled=true]:5.336946,S38[&"Number of transmissions"=0,"Node number"=77,Sampled=true]:1.150419)[&"Number of transmissions"=0,"Node number"=75,Infector="S38","Sampled Descendant"=true]:0.852289)[&"Number of transmissions"=0,"Node number"=73,Infector="S38","Sampled Descendant"=true]:0.622563)[&"Number of transmissions"=0,"Node number"=71,Infector="S38","Sampled Descendant"=true]:1.535728)[&"Number of transmissions"=0,"Node number"=69,Infector="S38","Sampled Descendant"=true]:5.386811,((S44[&"Number of transmissions"=0,"Node number"=80,Sampled=true]:10.721719,S43[&"Number of transmissions"=0,"Node number"=81,Sampled=true]:2.144846)[&"Number of transmissions"=0,"Node number"=79,Infector="S43","Sampled Descendant"=true]:9.867093,(S45[&"Number of transmissions"=0,"Node number"=83,Sampled=true]:8.018095,S37[&"Number of transmissions"=0,"Node number"=84,Sampled=true]:0.693086)[&"Number of transmissions"=0,"Node number"=82,Infector="S37","Sampled Descendant"=true]:2.96783)[&"Number of transmissions"=0,"Node number"=78,Infector="S37","Sampled Descendant"=true]:1.483158)[&"Number of transmissions"=0,"Node number"=68,Infector="S37","Sampled Descendant"=true]:2.500413,S33[&"Number of transmissions"=0,"Node number"=85,Sampled=true]:2.078242)[&"Number of transmissions"=0,"Node number"=67,Infector="S33","Sampled Descendant"=true]:0.609531)[&"Number of transmissions"=0,"Node number"=61,Infector="S33","Sampled Descendant"=true]:3.23878,((S47[&"Number of transmissions"=0,"Node number"=88,Sampled=true]:7.561989,(S48[&"Number of transmissions"=0,"Node number"=90,Sampled=true]:6.290077,S46[&"Number of transmissions"=0,"Node number"=91,Sampled=true]:1.055256)[&"Number of transmissions"=0,"Node number"=89,Infector="S46","Sampled Descendant"=true]:1.117338)[&"Number of transmissions"=0,"Node number"=87,Infector="S46","Sampled Descendant"=true]:9.829225,(S49[&"Number of transmissions"=0,"Node number"=93,Sampled=true]:5.312051,S23[&"Number of transmissions"=0,"Node number"=94,Sampled=true]:0.759257)[&"Number of transmissions"=0,"Node number"=92,Infector="S23","Sampled Descendant"=true]:2.306367)[&"Number of transmissions"=0,"Node number"=86,Infector="S23","Sampled Descendant"=true]:0.291574)[&"Number of transmissions"=0,"Node number"=60,Infector="S23","Sampled Descendant"=true]:0.761062)[&"Number of transmissions"=0,"Node number"=42,Infector="S23","Sampled Descendant"=true]:3.417413,S21[&"Number of transmissions"=0,"Node number"=95,Sampled=true]:2.933559)[&"Number of transmissions"=0,"Node number"=41,Infector="S21","Sampled Descendant"=true]:2.966704)[&"Number of transmissions"=0,"Node number"=39,Infector="S21","Sampled Descendant"=true]:4.285732,(S50[&"Number of transmissions"=0,"Node number"=97,Sampled=true]:17.220434,(S51[&"Number of transmissions"=0,"Node number"=99,Sampled=true]:3.768286,(S52[&"Number of transmissions"=0,"Node number"=101,Sampled=true]:5.900045,S20[&"Number of transmissions"=0,"Node number"=102,Sampled=true]:0.308989)[&"Number of transmissions"=0,"Node number"=100,Infector="S20","Sampled Descendant"=true]:0.052397)[&"Number of transmissions"=0,"Node number"=98,Infector="S20","Sampled Descendant"=true]:3.275976)[&"Number of transmissions"=0,"Node number"=96,Infector="S20","Sampled Descendant"=true]:0.501064)[&"Number of transmissions"=0,"Node number"=38,Infector="S20","Sampled Descendant"=true]:4.41279,S1[&"Number of transmissions"=0,"Node number"=103,Sampled=true]:0.73359)[&"Number of transmissions"=0,"Node number"=37,Infector="S1","Sampled Descendant"=true]:1.044993)[&"Number of transmissions"=0,"Node number"=35,Infector="S1","Sampled Descendant"=true]:1.188762)[&"Number of transmissions"=0,"Node number"=1,Infector="S1","Sampled Descendant"=true]:2.176976)[&"Node number"=0,"Sampled Descendant"=true];
+end;

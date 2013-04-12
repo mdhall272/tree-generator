@@ -24,18 +24,21 @@ public class ContinuousTreeSimulationSampleLimited extends ContinuousTreeSimulat
     private double timeOfLastSample;
     private double currentDeepestTipHeight;
     private ArrayList<NodeAndHeight> heightLookup;
+    private double infectious_k;
+    private double infectious_theta;
 
     public ContinuousTreeSimulationSampleLimited(double samplingProbability, double samplingStartTime,
                                                  int finalNumberOfSamples, double R0, double incubation_k,
                                                  double incubation_theta, double infectious_k,
                                                  double infectious_theta, boolean recordIncubationPeriods){
-        super(samplingProbability, samplingStartTime, R0, incubation_k, infectious_k, incubation_theta,
-                infectious_theta, recordIncubationPeriods);
+        super(samplingProbability, samplingStartTime, R0, incubation_k, infectious_k, recordIncubationPeriods);
         this.finalNumberOfSamples=finalNumberOfSamples;
         currentDeepestTipHeight=0;
         nodeCount=0;
         heightLookup=new ArrayList<NodeAndHeight>();
         this.recordIncubationPeriods = recordIncubationPeriods;
+        this.infectious_k = infectious_k;
+        this.infectious_theta = infectious_theta;
     }
 
     public void simulateInfection(ForwardRootedNode transmissionNode) {
