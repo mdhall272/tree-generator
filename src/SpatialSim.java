@@ -1,12 +1,16 @@
+import au.com.bytecode.opencsv.CSVWriter;
 import dr.app.tools.NexusExporter;
-import dr.evomodel.coalescent.CoalescentSimulator;
 import dr.evolution.tree.*;
 import dr.evolution.util.*;
 import dr.evomodel.coalescent.ExponentialGrowthModel;
 import dr.inference.model.Parameter;
 import dr.math.MathUtils;
-import dr.math.distributions.ExponentialDistribution;
-import jebl.math.Random;
+import dr.math.distributions.Distribution;
+import jebl.evolution.graphs.Node;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 
 import java.io.*;
 import java.util.ArrayList;
@@ -24,8 +28,7 @@ public class SpatialSim {
 
     private ArrayList<SpatialCase> cases;
     private double transmissionRate;
-    private double kernalDispersion;
-    private double rateOfBecomingUninfectious;
+    private double kernelDispersion;
     private double growthRate;
     private double coalsecentStep;
     private FlexibleTree transmissionTree;
@@ -34,16 +37,28 @@ public class SpatialSim {
     private HashMap<SpatialCase, SpatialCase> whoInfectedWho;
     private SpatialCase firstCase;
     private HashMap<SpatialCase,Boolean> causesAnInfection;
+    private HashMap<Integer, Distribution> latentPeriods;
+    private HashMap<Integer, Distribution> infectiousPeriods;
+    private Visuals visuals;
+    private DateTimeFormatter formatter = DateTimeFormat.forPattern("dd/MM/yyyy");
 
-    public SpatialSim(int noCases, double transmissionRate, double kernalDispersion, double rateOfBecomingUninfectious,
-                      double growthRate, double coalsecentStep){
+    public SpatialSim(int noCases, double transmissionRate, double kernelDispersion,
+                      HashMap<Integer, Distribution> latentPeriods, HashMap<Integer, Distribution> infectiousPeriods,
+                      double growthRate, double coalsecentStep, Visuals visuals){
         this.transmissionRate = transmissionRate;
-        this.kernalDispersion = kernalDispersion;
+        this.kernelDispersion = kernelDispersion;
+        this.infectiousPeriods = infectiousPeriods;
+        this.latentPeriods = latentPeriods;
         cases = new ArrayList<SpatialCase>();
-        this.rateOfBecomingUninfectious = rateOfBecomingUninfectious;
+        this.visuals = visuals;
+        MathUtils.setSeed(516644);
         for(int i=0; i<noCases; i++){
-            cases.add(new SpatialCase("Location_"+i));
+            double[] coords = {MathUtils.nextDouble(), MathUtils.nextDouble()};
+            int latentType = MathUtils.nextInt(latentPeriods.size());
+            int infectiousType = MathUtils.nextInt(infectiousPeriods.size());
+            cases.add(new SpatialCase(i, latentType, infectiousType, coords, visuals));
         }
+
         currentStep = 0;
         whoInfectedWho = new HashMap<SpatialCase,SpatialCase>();
         FlexibleNode transmissionRoot = new FlexibleNode();
@@ -60,7 +75,7 @@ public class SpatialSim {
         for(SpatialCase thisCase: cases){
             if(thisCase.isSusceptibleAt(currentStep)){
                 double force = forceOnA(thisCase, currentStep);
-                double random = Random.nextDouble();
+                double random = MathUtils.nextDouble();
                 if(random<force){
                     SpatialCase infector = pickMeAnInfector(thisCase, currentStep);
                     whoInfectedWho.put(thisCase, infector);
@@ -74,18 +89,33 @@ public class SpatialSim {
     }
 
     private void setInfectiousness(SpatialCase thisCase, int time){
-        double random2 = Random.nextDouble();
-        boolean stillInfected = true;
-        int daysInfected = 1;
-        while(stillInfected){
-            if(ExponentialDistribution.cdf(daysInfected,rateOfBecomingUninfectious)>random2){
-                stillInfected = false;
-            } else {
-                daysInfected++;
+        int daysLatent = 0;
+
+        if(latentPeriods.get(thisCase.getLatentType())!=null){
+            double random2 = MathUtils.nextDouble();
+            boolean stillLatent = true;
+            daysLatent = 1;
+            while(stillLatent){
+                if(latentPeriods.get(thisCase.getLatentType()).cdf(daysLatent)>random2){
+                    stillLatent = false;
+                } else {
+                    daysLatent++;
+                }
             }
         }
-        thisCase.setCullDay(time+daysInfected);
+        thisCase.setInfectiousDay(time+daysLatent);
 
+        double random3 = MathUtils.nextDouble();
+        boolean stillInfectious = true;
+        int daysInfectious = 1;
+        while(stillInfectious){
+            if(infectiousPeriods.get(thisCase.getInfectiousType()).cdf(daysInfectious)>random3){
+                stillInfectious = false;
+            } else {
+                daysInfectious++;
+            }
+        }
+        thisCase.setCullDay(time+daysLatent+daysInfectious);
     }
 
     private double forceOnA(SpatialCase thisCase, int time){
@@ -101,7 +131,7 @@ public class SpatialSim {
     private boolean infectionsRemain(int time){
         boolean out = false;
         for(SpatialCase thisCase: cases){
-            if(thisCase.isInfectiousAt(time)){
+            if(thisCase.isInfectedAt(time)){
                 out = true;
                 break;
             }
@@ -122,7 +152,7 @@ public class SpatialSim {
 
     private double forceOnADueToB(SpatialCase caseA, SpatialCase caseB, int time){
         if(caseB.isInfectiousAt(time)){
-            return transmissionRate*Math.exp(-kernalDispersion*distance(caseA.getCoords(),caseB.getCoords()));
+            return transmissionRate*Math.exp(-kernelDispersion *distance(caseA.getCoords(),caseB.getCoords()));
         } else {
             return 0;
         }
@@ -132,8 +162,8 @@ public class SpatialSim {
         return Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2));
     }
 
-    private void runSim(){
-        firstCase = cases.get(Random.nextInt(cases.size()));
+    public void runSim(){
+        firstCase = cases.get(MathUtils.nextInt(cases.size()));
         whoInfectedWho.put(firstCase,null);
         firstCase.setInfectionDay(-1);
         setInfectiousness(firstCase, -1);
@@ -144,6 +174,11 @@ public class SpatialSim {
         outputTree(transmissionTree, "testTTree.nex");
         makePhylogeneticTree();
         outputTree(phylogeneticTree, "testPTree.nex");
+        outputCSVNetwork("network.csv");
+
+        DateTime firstDay = formatter.parseDateTime("01/12/2011");
+        outputDataTable("data.csv", firstDay);
+
     }
 
     private void makeTransmissionTree(){
@@ -183,6 +218,70 @@ public class SpatialSim {
         FlexibleTree aTree = simulateCoalescent(taxa, growthRate, coalsecentStep);
         return aTree;
     }
+    public void outputCSVNetwork(String fileName){
+        try{
+            CSVWriter csvOut = new CSVWriter(new FileWriter(fileName));
+            String[] header = new String[2];
+            header[0] = "Child";
+            header[1] = "Parent";
+            csvOut.writeNext(header);
+            for(SpatialCase thisCase : cases){
+                String childID = thisCase.getName();
+                String infectorID;
+                try{
+                    infectorID = whoInfectedWho.get(thisCase).getName();
+                } catch(NullPointerException e){
+                    infectorID = "Start";
+                }
+                String[] line = new String[2];
+                line[0]=childID;
+                line[1]=infectorID;
+                csvOut.writeNext(line);
+            }
+            csvOut.close();
+        }
+        catch(IOException e){
+            System.out.println("IOException");
+        }
+    }
+
+    private void outputDataTable(String fileName, DateTime firstInfection){
+        try{
+            CSVWriter csvOut = new CSVWriter(new FileWriter(fileName));
+            String[] header = new String[6];
+            header[0] = "Farm_ID";
+            header[1] = "Taxon";
+            header[2] = "Infection_date";
+            header[3] = "Infectious_date";
+            header[4] = "Exam_date";
+            header[5] = "Cull_date";
+            csvOut.writeNext(header);
+
+            for(SpatialCase aCase : cases){
+                if(aCase.wasEverInfected()){
+                    DateTime infectionDate = firstInfection.plusDays(1+aCase.getInfectionDay());
+                    DateTime infectiousDate = firstInfection.plusDays(1+aCase.getInfectiousDay());
+                    DateTime cullDate = firstInfection.plusDays(1+aCase.getCullDay());
+                    // and for now:
+                    DateTime examDate = cullDate;
+
+                    String[] line = new String[6];
+                    line[0] = aCase.getName();
+                    line[1] = aCase.getName()+"|"+examDate.getDayOfMonth()+"_"
+                            +examDate.getMonthOfYear()+"_"
+                            +examDate.getYear();
+                    line[2] = formatter.print(infectionDate);
+                    line[3] = formatter.print(infectiousDate);
+                    line[4] = formatter.print(examDate);
+                    line[5] = formatter.print(cullDate);
+                    csvOut.writeNext(line);
+                }
+            }
+            csvOut.close();
+        } catch(IOException e){
+            System.out.println("IOException");
+        }
+    }
 
     private FlexibleTree simulateCoalescent(Taxa taxa, double growthRate, double step){
         double maxTime = 0;
@@ -218,13 +317,13 @@ public class SpatialSim {
                 double a = active*(active-1);
                 double b = 2*nextStepPopSize;
                 double probCoalescence = a/b;
-                double randomDraw = Random.nextDouble();
+                double randomDraw = MathUtils.nextDouble();
                 if(randomDraw<probCoalescence){
                     // coalescence has happened
-                    int firstIndex = Random.nextInt(active);
+                    int firstIndex = MathUtils.nextInt(active);
                     int secondIndex = firstIndex;
                     while(secondIndex==firstIndex){
-                        secondIndex = Random.nextInt(active);
+                        secondIndex = MathUtils.nextInt(active);
                     }
                     FlexibleNode firstNode = activeNodes.get(firstIndex);
                     FlexibleNode secondNode = activeNodes.get(secondIndex);
@@ -367,6 +466,14 @@ public class SpatialSim {
         cullNode.setAttribute("location", thisCase.getName());
     }
 
+    public ArrayList<SpatialCase> getCases(){
+        return cases;
+    }
+
+    public HashMap<SpatialCase, SpatialCase> getWIW(){
+        return whoInfectedWho;
+    }
+
     private void outputTree(FlexibleTree tree, String fileName){
         try{
             PrintStream tWriter = new PrintStream(fileName);
@@ -377,12 +484,5 @@ public class SpatialSim {
             System.err.println("IOException");
         }
     }
-
-
-    public static void main(String[] args){
-        SpatialSim instance = new SpatialSim(50, 0.05, 0.1, 1, 15, 0.01);
-        instance.runSim();
-    }
-
 
 }
