@@ -38,7 +38,6 @@ public class Visuals extends PApplet {
                 arrows.add(new Arrow(origin, destination, (float)0.8, this));
             }
         }
-
     }
 
 
@@ -55,6 +54,7 @@ public class Visuals extends PApplet {
         for(Arrow arrow : arrows){
             arrow.display();
         }
+        save("image.tif");
     }
 
 
@@ -106,6 +106,8 @@ public class Visuals extends PApplet {
         float[] translation = {end[0]-start[0], end[1]-start[1]};
         return getAngle(translation);
     }
+
+
 
 }
 
