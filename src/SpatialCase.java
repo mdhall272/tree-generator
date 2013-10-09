@@ -124,10 +124,10 @@ public class SpatialCase implements Comparable<SpatialCase> {
         visualiser.textAlign(PConstants.CENTER, PConstants.CENTER);
         visualiser.fill(255);
         visualiser.stroke(0);
-        visualiser.ellipse(((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, 16, 16);
+        visualiser.ellipse(((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, 25, 25);
         visualiser.fill(0);
-        visualiser.textFont(f,12);
-        visualiser.text(Integer.toString(number), ((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, (float)15, (float)15);
+        visualiser.textFont(f,14);
+        visualiser.text(Integer.toString(number), ((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, (float)25, (float)25);
 
     }
 

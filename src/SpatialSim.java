@@ -4,7 +4,6 @@ import dr.evolution.tree.*;
 import dr.evolution.util.*;
 import dr.math.MathUtils;
 import dr.math.distributions.Distribution;
-import dr.math.distributions.ExponentialDistribution;
 import dr.math.distributions.GammaDistribution;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -16,13 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-/**
- * Created with IntelliJ IDEA.
- * User: mhall
- * Date: 04/06/2013
- * Time: 15:20
- * To change this template use File | Settings | File Templates.
- */
 public class SpatialSim {
 
     private ArrayList<SpatialCase> cases;
@@ -46,7 +38,7 @@ public class SpatialSim {
     private String ppTreeFileName;
     private String dataTableFileName;
     private String csvNetworkFileName;
-    private boolean useGeography = false;
+    private boolean useGeography = true;
 
     public SpatialSim(int noCases, double transmissionRate, double kernelDispersion,
                       HashMap<Integer, Distribution> latentPeriods, HashMap<Integer, Distribution> infectiousPeriods,
@@ -239,17 +231,19 @@ public class SpatialSim {
             header[1] = "Parent";
             csvOut.writeNext(header);
             for(SpatialCase thisCase : cases){
-                String childID = thisCase.getName();
-                String infectorID;
-                try{
-                    infectorID = whoInfectedWho.get(thisCase).getName();
-                } catch(NullPointerException e){
-                    infectorID = "Start";
+                if(thisCase.wasEverInfected()){
+                    String childID = thisCase.getName();
+                    String infectorID;
+                    try{
+                        infectorID = whoInfectedWho.get(thisCase).getName();
+                    } catch(NullPointerException e){
+                        infectorID = "Start";
+                    }
+                    String[] line = new String[2];
+                    line[0]=childID;
+                    line[1]=infectorID;
+                    csvOut.writeNext(line);
                 }
-                String[] line = new String[2];
-                line[0]=childID;
-                line[1]=infectorID;
-                csvOut.writeNext(line);
             }
             csvOut.close();
         }
@@ -551,59 +545,76 @@ public class SpatialSim {
             }
         }
         newPhylogeneticTree.endTreeEdit();
-        return new FlexibleTree(newPhylogeneticTree);
+        return new FlexibleTree(newPhylogeneticTree, true);
     }
 
     public static void main(String[] args){
         try{
             BufferedWriter truthTeller = new BufferedWriter(new FileWriter("trueValues.csv"));
-            truthTeller.write("Number,Transmission_rate,Infectious_mean,Infectious_sd");
+            truthTeller.write("Number,Transmission_rate,Infectious_mean,Infectious_sd,Infectious_var,Infectious_shape,"
+                    +"Infectious_scale,Dispersion,Failures");
             truthTeller.newLine();
-            for(int i=1; i<11; i++){
+            for(int i=1; i<51; i++){
                 double trRate=0;
-                double infmean;
-                double infSD;
+                double infmean=0;
+                double infvar=0;
+
+                double kd=0;
 
                 double random_k=0;
                 double random_theta=0;
 
                 boolean bigenough = false;
+                int failureCount = 0;
+
+
+
+
+                trRate = MathUtils.nextDouble()*0.1;
+
+                infmean = GammaDistribution.nextGamma(12, 0.33333333333)+1;
+                infvar = GammaDistribution.nextGamma(4,0.25);
+
+                random_k = Math.pow(infmean,2)/infvar;
+                random_theta = infvar/infmean;
+
+                HashMap<Integer, Distribution> latentPeriods = new HashMap<Integer, Distribution>();
+                latentPeriods.put(0, null);
+
+                HashMap<Integer, Distribution> infectiousPeriods = new HashMap<Integer, Distribution>();
+                infectiousPeriods.put(0, new GammaDistribution(random_k, random_theta));
+
+                kd = MathUtils.nextDouble()*9 + 1;
+
                 while(!bigenough){
-
-                    trRate = MathUtils.nextDouble()*0.1;
-                    infmean = MathUtils.nextDouble()*9 + 1;
-                    infSD = MathUtils.nextDouble()*infmean*0.5;
-
-                    random_k = Math.pow(infmean,2)/Math.pow(infSD,2);
-                    random_theta = Math.pow(infSD,2)/infmean;
-
-                    HashMap<Integer, Distribution> latentPeriods = new HashMap<Integer, Distribution>();
-                    latentPeriods.put(0, null);
-
-                    HashMap<Integer, Distribution> infectiousPeriods = new HashMap<Integer, Distribution>();
-                    infectiousPeriods.put(0, new GammaDistribution(random_k, random_theta));
-
-
-
-
-                    SpatialSim simulation = new SpatialSim(20, trRate, 0.1, latentPeriods, infectiousPeriods, 15, 0.01, null,
-                            "01/12/2011", "pTree_"+i+".nex", "tTree_"+i+".nex", "ppTree_"+i+".nex", "data_"+i+".csv",
-                            "network_"+i+".csv");
+                    SpatialSim simulation = new SpatialSim(20, trRate, kd, latentPeriods, infectiousPeriods, 15, 0.01,
+                            null, "01/12/2011", "pTree_G_"+i+".nex", "tTree_G_"+i+".nex", "ppTree_G_"+i+".nex",
+                            "data_G_"+i+".csv", "network_G_"+i+".csv");
                     simulation.runSim();
                     if(simulation.numberOfInfections()>15){
                         bigenough = true;
+                    } else {
+                        failureCount++;
+                    }
+                    if(failureCount>1000){
+                        i--;
+                        break;
                     }
                 }
 
-                String line = Integer.toString(i)+","+Double.toString(trRate)+","+Double.toString(random_k)+","+Double.toString(random_theta);
+                if(bigenough){
+                    String line = Integer.toString(i)+","+Double.toString(trRate)+","+Double.toString(infmean)+","
+                            +Double.toString(Math.sqrt(infvar))+","+Double.toString(infvar)+","+Double.toString(random_k)+","
+                            +Double.toString(random_theta)+","+Double.toString(kd)+","+Integer.toString(failureCount);
 
-                truthTeller.write(line);
-                truthTeller.newLine();
+                    truthTeller.write(line);
+                    truthTeller.newLine();
+                }
 
             }
             truthTeller.flush();
         } catch(IOException e){
-            System.out.print("IOException");
+            e.printStackTrace();
         }
     }
 

@@ -27,7 +27,8 @@ public class Visuals extends PApplet {
         HashMap<Integer, Distribution> infectiousPeriods = new HashMap<Integer, Distribution>();
         infectiousPeriods.put(0, new ExponentialDistribution(0.2));
 
-        simulation = new SpatialSim(20, 0.05, 0.1, latentPeriods, infectiousPeriods, 15, 0.01, this, "01/12/2011", null, null, null, null, null);
+        simulation = new SpatialSim(10, 0.05, 0.1, latentPeriods, infectiousPeriods, 15, 0.01, this, "01/12/2011",
+                "testPTree.nex", "testTTree.nex", "testPPTree.nex", "testData.csv", "testNet.csv");
         simulation.runSim();
 
         arrows = new HashSet<Arrow>();
