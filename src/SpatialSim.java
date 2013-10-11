@@ -39,6 +39,7 @@ public class SpatialSim {
     private String dataTableFileName;
     private String csvNetworkFileName;
     private boolean useGeography = true;
+    private int lastStep;
 
     public SpatialSim(int noCases, double transmissionRate, double kernelDispersion,
                       HashMap<Integer, Distribution> latentPeriods, HashMap<Integer, Distribution> infectiousPeriods,
@@ -178,6 +179,7 @@ public class SpatialSim {
         while(infectionsRemain(currentStep)){
             step();
         }
+        lastStep = currentStep;
         makeTransmissionTree();
         outputTree(transmissionTree, tTreeFileName);
         makePhylogeneticTree();
@@ -185,6 +187,10 @@ public class SpatialSim {
         outputTree(makeWellBehavedTree(), pTreeFileName);
         outputCSVNetwork(csvNetworkFileName);
         outputDataTable(dataTableFileName, firstDay);
+    }
+
+    public int getLastStep(){
+        return lastStep;
     }
 
     private void makeTransmissionTree(){

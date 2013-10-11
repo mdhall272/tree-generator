@@ -27,7 +27,7 @@ public class Visuals extends PApplet {
         HashMap<Integer, Distribution> infectiousPeriods = new HashMap<Integer, Distribution>();
         infectiousPeriods.put(0, new ExponentialDistribution(0.2));
 
-        simulation = new SpatialSim(10, 0.05, 0.1, latentPeriods, infectiousPeriods, 15, 0.01, this, "01/12/2011",
+        simulation = new SpatialSim(20, 0.05, 0.1, latentPeriods, infectiousPeriods, 15, 0.01, this, "01/12/2011",
                 "testPTree.nex", "testTTree.nex", "testPPTree.nex", "testData.csv", "testNet.csv");
         simulation.runSim();
 
@@ -36,7 +36,8 @@ public class Visuals extends PApplet {
         for(SpatialCase destination : simulation.getCases()){
             SpatialCase origin = simulation.getWIW().get(destination);
             if(origin!=null){
-                arrows.add(new Arrow(origin, destination, (float)0.8, this));
+                arrows.add(new Arrow(origin, destination, (float)1, this, destination.getInfectionDay(),
+                        destination.getInfectionDay()));
             }
         }
     }
@@ -44,18 +45,24 @@ public class Visuals extends PApplet {
 
     public void setup(){
         size(1000,1000);
-        f = createFont("Arial",10,true);
+        f = createFont("Arial Rounded MT Bold", 10,true);
     }
 
     public void draw(){
+        for(SpatialCase aCase: simulation.getCases()){
+            aCase.makeColourMap(simulation.getLastStep());
+        }
         background(255);
-        for(SpatialCase thisCase : simulation.getCases()){
-            thisCase.display(f);
+        for(int time = 0; time<simulation.getLastStep(); time++){
+            background(255);
+            for(SpatialCase thisCase : simulation.getCases()){
+                thisCase.display(f, time);
+            }
+            for(Arrow arrow : arrows){
+                arrow.display(time);
+            }
+            saveFrame("simFrame_"+time+".tif");
         }
-        for(Arrow arrow : arrows){
-            arrow.display();
-        }
-        save("image.tif");
     }
 
 
@@ -69,7 +76,7 @@ public class Visuals extends PApplet {
         float[] floatEnd = translateToImageSpace(end);
 
         float fullLength = (float)Math.sqrt(Math.pow(floatStart[0]-floatEnd[0],2)+Math.pow(floatStart[1]-floatEnd[1],2));
-        float displayLength = fullLength*proportionToDisplay;
+        float displayLength = (fullLength-25)*proportionToDisplay;
 
         float angle = getAngle(floatStart, floatEnd);
 
@@ -80,7 +87,8 @@ public class Visuals extends PApplet {
         pushMatrix();
         translate(displayStartX, displayStartY);
         rotate(angle);
-        line(0,0,displayLength, 0);
+        strokeWeight(2);
+        line(25,0,displayLength, 0);
         line(displayLength, 0, displayLength - 8, -8);
         line(displayLength, 0, displayLength - 8, 8);
         popMatrix();

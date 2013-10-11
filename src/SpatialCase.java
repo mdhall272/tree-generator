@@ -1,6 +1,8 @@
 import processing.core.PConstants;
 import processing.core.PFont;
 
+import java.util.HashMap;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +26,7 @@ public class SpatialCase implements Comparable<SpatialCase> {
     private int infectiousType;
     private Visuals visualiser;
     private boolean wasEverInfected;
+    private HashMap<Integer, Integer[]> colourMap;
 
 
     public SpatialCase(int number, int latentType, int infectiousType, double[] coords, Visuals visualiser){
@@ -37,6 +40,26 @@ public class SpatialCase implements Comparable<SpatialCase> {
         cullDay = Integer.MAX_VALUE;
         this.visualiser = visualiser;
         wasEverInfected = false;
+    }
+
+    public void makeColourMap(int end){
+        colourMap = new HashMap<Integer,Integer[]>();
+        for(int i=0; i<end; i++){
+            if(isSusceptibleAt(i)){
+                Integer[] green = {50,205,50};
+                colourMap.put(i,green);
+            } else if(isLatentAt(i)){
+                Integer[] orange = {255,140,0};
+                colourMap.put(i,orange);
+            } else if(isInfectiousAt(i)){
+                Integer[] red = {255,0,0};
+                colourMap.put(i,red);
+            } else if(isCulledAt(i)){
+                Integer[] grey = {125,125,125};
+                colourMap.put(i, grey);
+            }
+        }
+
     }
 
     public double[] getCoords(){
@@ -118,16 +141,17 @@ public class SpatialCase implements Comparable<SpatialCase> {
                 infectionDay<spatialCase.getInfectionDay() ? -1 : 1);
     }
 
-    public void display(PFont f){
+    public void display(PFont f, int time){
         visualiser.ellipseMode(PConstants.CENTER);
         visualiser.rectMode(PConstants.CENTER);
         visualiser.textAlign(PConstants.CENTER, PConstants.CENTER);
-        visualiser.fill(255);
+        visualiser.fill(colourMap.get(time)[0],colourMap.get(time)[1],colourMap.get(time)[2]);
         visualiser.stroke(0);
+        visualiser.strokeWeight(2);
         visualiser.ellipse(((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, 25, 25);
         visualiser.fill(0);
         visualiser.textFont(f,14);
-        visualiser.text(Integer.toString(number), ((float) coords[0] * 900)+50, ((float) coords[1] * 900)+50, (float)25, (float)25);
+        visualiser.text(Integer.toString(number), ((float) coords[0] * 900)+50, ((float) coords[1] * 900)+49, (float)25, (float)25);
 
     }
 
